@@ -5,20 +5,26 @@ const box=document.getElementById("error");
 function showError(message){if(box)box.innerHTML="<div class='error'>"+String(message).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))+"</div>";}
 function showSuccess(message){if(box)box.innerHTML="<div class='success'>"+String(message).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))+"</div>";}
 async function redirectByRole(){
- const user=(await client.auth.getUser()).data.user;
- if(!user)return location.href="login.html";
- const r=await client.from("profiles").select("role").eq("id",user.id).single();
- if(r.error)return showError("Akun berhasil masuk, tetapi profil belum siap. Silakan coba lagi.");
- const role=r.data.role;
- location.href=role==="admin"?"index.html":role==="mitra"?"index.html":"index.html";
+ try{
+  const {data,error}=await client.auth.getUser();
+  if(error)throw error;
+  const user=data.user;
+  if(!user){location.href="login.html";return;}
+  const r=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();
+  if(r.error)throw r.error;
+  if(!r.data?.role)return showError("Akun sudah aktif tetapi profil belum tersedia. Silakan coba daftar ulang atau hubungi admin.");
+  location.href="index.html";
+ }catch(e){showError(e?.message||"Gagal membuka dashboard.");}
 }
 const lf=document.getElementById("loginForm");
 if(lf)lf.addEventListener("submit",async e=>{
  e.preventDefault(); if(box)box.innerHTML="";
  const email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;
- const r=await client.auth.signInWithPassword({email,password});
- if(r.error)return showError(r.error.message);
- await redirectByRole();
+ try{
+  const r=await client.auth.signInWithPassword({email,password});
+  if(r.error)throw r.error;
+  await redirectByRole();
+ }catch(e){showError(e?.message||"Gagal masuk. Coba lagi.");}
 });
 const rf=document.getElementById("registerForm");
 if(rf)rf.addEventListener("submit",async e=>{
@@ -27,8 +33,10 @@ if(rf)rf.addEventListener("submit",async e=>{
  if(!name)return showError("Nama lengkap wajib diisi.");
  if(!phone)return showError("No. HP wajib diisi.");
  if(password.length<6)return showError("Password minimal 6 karakter.");
- const r=await client.auth.signUp({email,password,options:{data:{full_name:name,phone,role}}});
- if(r.error)return showError(r.error.message);
- if(r.data.session)return redirectByRole();
- showSuccess("Pendaftaran berhasil. Silakan cek email jika verifikasi email aktif, lalu masuk.");
+ try{
+  const r=await client.auth.signUp({email,password,options:{data:{full_name:name,phone,role}}});
+  if(r.error)throw r.error;
+  if(r.data.session){await redirectByRole();return;}
+  showSuccess("Pendaftaran berhasil. Silakan cek email jika verifikasi email aktif, lalu masuk.");
+ }catch(e){showError(e?.message||"Pendaftaran gagal. Coba lagi.");}
 });
