@@ -128,3 +128,32 @@ end $$;
 revoke all on function private.ensure_wallet_for_mitra() from public,anon,authenticated;
 drop trigger if exists ensure_wallet_for_mitra on public.profiles;
 create trigger ensure_wallet_for_mitra after insert on public.profiles for each row execute function private.ensure_wallet_for_mitra();
+
+
+create or replace function private.apply_payment_to_wallet() returns trigger language plpgsql security definer set search_path=pg_catalog,public as $$
+declare pid uuid;
+begin
+ if new.status='paid' and old.status is distinct from 'paid' then
+   select partner_id into pid from public.orders where id=new.order_id;
+   if pid is not null then
+     insert into public.mitra_wallets(mitra_id,balance,total_earned) values(pid,new.amount,new.amount)
+     on conflict(mitra_id) do update set balance=public.mitra_wallets.balance+excluded.balance,total_earned=public.mitra_wallets.total_earned+excluded.total_earned,updated_at=now();
+   end if;
+ end if;
+ return new;
+end $$;
+revoke all on function private.apply_payment_to_wallet() from public,anon,authenticated;
+drop trigger if exists apply_payment_to_wallet on public.payments;
+create trigger apply_payment_to_wallet after update on public.payments for each row execute function private.apply_payment_to_wallet();
+
+create or replace function private.apply_payout_to_wallet() returns trigger language plpgsql security definer set search_path=pg_catalog,public as $$
+begin
+ if new.status='paid' and old.status is distinct from 'paid' then
+   update public.mitra_wallets set balance=balance-new.amount,updated_at=now() where mitra_id=new.mitra_id and balance>=new.amount;
+   if not found then raise exception 'Insufficient wallet balance'; end if;
+ end if;
+ return new;
+end $$;
+revoke all on function private.apply_payout_to_wallet() from public,anon,authenticated;
+drop trigger if exists apply_payout_to_wallet on public.payouts;
+create trigger apply_payout_to_wallet after update on public.payouts for each row execute function private.apply_payout_to_wallet();
