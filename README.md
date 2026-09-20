@@ -1,12 +1,11 @@
 # JASA AJA
+Aplikasi marketplace jasa on-demand.
 
-Marketplace jasa on-demand: Service AC, elektronik, listrik, bangunan, antar motor, dan antar mobil.
+Layanan: Service AC, Service Elektronik, Tukang Listrik, Tukang Bangunan, Jasa Antar (Motor), Jasa Antar (Mobil).
 
-## Pembayaran
-Hanya QRIS dan Cash.
+Pembayaran: QRIS dan Cash.
 
-## Deploy
-Repository ini disiapkan untuk GitHub Pages. Frontend memakai Supabase publishable key saja; jangan menaruh service_role/secret key di client.
+Frontend: GitHub Pages. Backend: Supabase. Client hanya memakai publishable key.
 
-## MVP
-Customer booking dan service catalog menjadi fondasi. Backend Supabase perlu schema + RLS sebelum menerima order produksi.
+## Status
+MVP customer booking + database/RLS. Mitra/admin, realtime tracking, QRIS gateway, dan verifikasi operasional perlu dikonfigurasi sebelum produksi.
