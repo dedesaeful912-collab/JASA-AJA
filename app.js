@@ -16,9 +16,10 @@ async function connectTokopedia(){
 if($("connectTokopedia"))$("connectTokopedia").onclick=connectTokopedia;
 async function loadTokopediaStatus(){
   const el=$("tokopediaStatus"); if(!el||!user)return;
-  const {data,error}=await db.from("tokopedia_connections").select("shop_name,region,updated_at").order("updated_at",{ascending:false}).limit(1).maybeSingle();
-  if(error){el.textContent="";return;}
-  el.textContent=data?"Tersambung: "+(data.shop_name||"Toko")+(data.region?" • "+data.region:""):"Belum tersambung.";
+  const {data,error}=await db.functions.invoke("tokopedia-oauth",{body:{action:"status"}});
+  if(error||!data){el.textContent="Belum tersambung.";return;}
+  const c=data.connection;
+  el.textContent=c?"Tersambung: "+(c.shop_name||"Toko")+(c.region?" • "+c.region:""):"Belum tersambung.";
 }
 const _showApp=showApp;
 showApp=function(){_showApp();loadTokopediaStatus()};
