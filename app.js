@@ -11,7 +11,21 @@ function showModal(html){$("modalBody").innerHTML=html;$("modal").classList.remo
 function closeModal(){$("modal").classList.add("hidden")}
 function msg(type,text){return '<div class="'+type+'">'+esc(text)+'</div>'}
 async function getUser(){return (await supabase.auth.getUser()).data.user}
-async function loadServices(){const r=await supabase.from("services").select("id,name,description,icon,active").order("name");if(r.error){$("services").innerHTML=msg("error","Gagal memuat layanan");return}services=r.data||[];$("services").innerHTML=services.filter(s=>s.active).map(s=>'<button class="card" data-id="'+s.id+'"><span class="icon">'+esc(s.icon||"🛠️")+'</span><b>'+esc(s.name)+'</b><span>'+esc(s.description||"Pesan mitra profesional")+'</span></button>').join("")||'<div class="loading">Belum ada layanan aktif.</div>';$("service").innerHTML='<option value="">Pilih layanan</option>'+services.filter(s=>s.active).map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join("");document.querySelectorAll(".card[data-id]").forEach(c=>c.onclick=()=>{$("service").value=c.dataset.id;scrollToId("booking")})}
+async function loadServices(){
+  const fallback=[
+    {id:"service-ac",name:"Service AC",description:"Perawatan dan perbaikan AC",icon:"❄️",active:true},
+    {id:"service-elektronik",name:"Service Elektronik",description:"Perbaikan perangkat elektronik",icon:"📺",active:true},
+    {id:"tukang-listrik",name:"Tukang Listrik",description:"Instalasi dan perbaikan listrik",icon:"⚡",active:true},
+    {id:"tukang-bangunan",name:"Tukang Bangunan",description:"Pekerjaan bangunan dan renovasi",icon:"🧱",active:true},
+    {id:"antar-motor",name:"Jasa Antar (Motor)",description:"Jasa antar menggunakan motor",icon:"🛵",active:true},
+    {id:"antar-mobil",name:"Jasa Antar (Mobil)",description:"Jasa antar menggunakan mobil",icon:"🚗",active:true}
+  ];
+  const r=await supabase.from("services").select("id,name,description,icon,active").eq("active",true).order("name");
+  services=(r.error||!r.data?.length)?fallback:r.data;
+  $("services").innerHTML=services.map(s=>'<button class="card" data-id="'+s.id+'"><span class="icon">'+esc(s.icon||"🛠️")+'</span><b>'+esc(s.name)+'</b><span>'+esc(s.description||"Pesan mitra profesional")+'</span></button>').join("");
+  $("service").innerHTML='<option value="">Pilih layanan</option>'+services.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join("");
+  document.querySelectorAll(".card[data-id]").forEach(c=>c.onclick=()=>{$("service").value=c.dataset.id;scrollToId("booking")});
+}
 async function loadProfile(){currentUser=await getUser();currentProfile=null;if(!currentUser)return;const r=await supabase.from("profiles").select("*").eq("id",currentUser.id).single();if(!r.error)currentProfile=r.data}
 function authLabel(){const b=$("authBtn");if(!b)return;b.onclick=null;if(currentUser){b.textContent="Keluar";b.removeAttribute("href");b.onclick=async()=>{await supabase.auth.signOut();await refresh()};}else{b.textContent="Masuk";b.setAttribute("href","login.html");}}
 async function refresh(){await loadProfile();authLabel();if(currentUser){$("dashboard").classList.remove("hidden");await renderDashboard();subscribeRealtime()}else{$("dashboard").classList.add("hidden");if(channel){supabase.removeChannel(channel);channel=null}}}
