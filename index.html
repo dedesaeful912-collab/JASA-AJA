@@ -1,1 +1,50 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JASA AJA</title><meta name="description" content="Pesan jasa profesional di sekitar kamu."><link rel="stylesheet" href="style.css"></head><body><header><a class="logo" href="#">JA <span>JASA AJA</span></a><nav><a href="#layanan">Layanan</a><a href="#cara">Cara Kerja</a><button id="authBtn">Masuk</button></nav></header><main><section class="hero"><div><span class="tag">JASA ON-DEMAND</span><h1>Butuh jasa?<br><strong>JASA AJA.</strong></h1><p>Teknisi, tukang, dan jasa antar datang ke lokasi kamu. Pesan, pantau, setujui harga, lalu bayar QRIS atau cash.</p><button class="cta" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Pesan Sekarang →</button></div><div class="hero-art"><div class="pin">📍</div><b>Mitra menuju kamu</b><small>Tracking & status order</small></div></section><section id="layanan"><div class="heading"><span class="tag">LAYANAN</span><h2>Pilih kebutuhanmu</h2></div><div id="services" class="cards"><div>Memuat layanan...</div></div></section><section id="booking" class="booking"><div class="heading"><span class="tag">BOOKING</span><h2>Buat Pesanan</h2></div><form id="orderForm"><label>Layanan<select id="service" required></select></label><label>Alamat<textarea id="address" required placeholder="Alamat lengkap"></textarea></label><label>Kebutuhan<textarea id="problem" placeholder="Jelaskan pekerjaan yang dibutuhkan"></textarea></label><div class="row"><label>Latitude<input id="lat" type="number" step="any"></label><label>Longitude<input id="lng" type="number" step="any"></label></div><button class="cta">Cari Mitra</button></form><div id="result"></div></section><section id="cara"><div class="heading"><span class="tag">4 LANGKAH</span><h2>Semudah pesan ojol</h2></div><div class="steps"><article><b>01 · Pesan</b><span>Pilih layanan dan lokasi.</span></article><article><b>02 · Mitra datang</b><span>Mitra menerima dan menuju kamu.</span></article><article><b>03 · Setujui harga</b><span>Mitra cek pekerjaan dan memberi penawaran.</span></article><article><b>04 · Bayar</b><span>QRIS atau cash, lalu beri rating.</span></article></div></section></main><footer>JASA AJA · © 2026</footer><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JASA AJA — Marketplace Jasa</title>
+<meta name="description" content="Pesan teknisi, tukang, dan jasa antar di sekitar Anda.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a class="logo" href="#"><span>JA</span> JASA AJA</a>
+  <nav>
+    <a href="#layanan">Layanan</a><a href="#cara">Cara Kerja</a>
+    <button id="authBtn" class="outline">Masuk</button>
+  </nav>
+</header>
+<main>
+<section class="hero">
+  <div><span class="tag">JASA ON-DEMAND</span><h1>Butuh jasa?<br><strong>JASA AJA.</strong></h1>
+  <p>Pesan teknisi, tukang, dan jasa antar. Mitra menerima order, datang ke lokasi, memberi penawaran, lalu pekerjaan diselesaikan dan dibayar dengan QRIS atau cash.</p>
+  <button class="cta" onclick="scrollToId('booking')">Pesan Sekarang →</button></div>
+  <div class="hero-art"><div class="hero-icon">📍</div><b>Mitra menuju kamu</b><small>Status & lokasi diperbarui realtime</small></div>
+</section>
+
+<section id="layanan"><div class="heading"><span class="tag">LAYANAN</span><h2>Pilih kebutuhanmu</h2></div>
+<div id="services" class="cards"><div class="loading">Memuat layanan...</div></div></section>
+
+<section id="booking" class="panel">
+  <div class="heading"><span class="tag">BOOKING</span><h2>Buat Pesanan</h2><p class="muted">Login diperlukan untuk membuat order.</p></div>
+  <form id="orderForm">
+    <label>Layanan<select id="service" required><option value="">Pilih layanan</option></select></label>
+    <label>Alamat<textarea id="address" required placeholder="Alamat lengkap lokasi pekerjaan"></textarea></label>
+    <label>Kebutuhan<textarea id="problem" placeholder="Jelaskan pekerjaan yang dibutuhkan"></textarea></label>
+    <div class="row"><label>Latitude<input id="lat" type="number" step="any"></label><label>Longitude<input id="lng" type="number" step="any"></label></div>
+    <button class="secondary" type="button" id="locateBtn">📍 Gunakan lokasi saya</button>
+    <button class="cta" type="submit">Cari Mitra</button>
+  </form><div id="result"></div>
+</section>
+
+<section id="dashboard" class="panel hidden">
+  <div id="dash"></div>
+</section>
+
+<section id="cara"><div class="heading"><span class="tag">4 LANGKAH</span><h2>Semudah pesan ojol</h2></div>
+<div class="steps"><article><b>01 · Pesan</b><span>Pilih layanan dan lokasi.</span></article><article><b>02 · Mitra datang</b><span>Mitra menerima dan menuju kamu.</span></article><article><b>03 · Setujui harga</b><span>Mitra cek pekerjaan dan memberi penawaran.</span></article><article><b>04 · Bayar</b><span>QRIS atau cash, lalu beri rating.</span></article></div></section>
+</main>
+<footer>JASA AJA · © 2026 · QRIS/cash</footer>
+<div id="modal" class="modal hidden"><div class="modal-box"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js"></script>
+</body></html>
