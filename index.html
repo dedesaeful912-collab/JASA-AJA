@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JASA AJA — Jasa di Sekitar Kamu</title>
+<meta name="description" content="JASA AJA — pesan teknisi, tukang, dan jasa antar.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+<header class="top"><div class="brand"><span class="logo">JA</span><div><b>JASA AJA</b><small>Jasa dekat, beres cepat.</small></div></div><button id="authBtn" class="ghost">Masuk</button></header>
+<main>
+<section id="hero" class="hero"><div><span class="pill">⚡ On-demand service</span><h1>Butuh jasa?<br><em>JASA AJA.</em></h1><p>Pesan teknisi, tukang, atau jasa antar dengan alur sederhana seperti aplikasi on-demand.</p><button class="primary" id="startBtn">Pesan Jasa</button></div><div class="hero-card"><div class="mapdot">📍</div><b>Mitra di sekitar kamu</b><span>Tracking lokasi & status order</span></div></section>
+<section><div class="section-head"><div><span class="eyebrow">LAYANAN</span><h2>Pilih kebutuhanmu</h2></div><span id="serviceCount" class="muted"></span></div><div id="services" class="grid"></div></section>
+<section class="order-panel" id="orderPanel"><div class="section-head"><div><span class="eyebrow">PESANAN</span><h2>Buat order</h2></div><button class="ghost" id="closeOrder">Tutup</button></div>
+<form id="orderForm"><label>Layanan<select id="service" required></select></label><label>Alamat<textarea id="address" required placeholder="Contoh: Jl. Industri No. 10, Cikarang"></textarea></label><label>Keluhan / kebutuhan<textarea id="problem" placeholder="Jelaskan pekerjaan yang dibutuhkan"></textarea></label><div class="two"><label>Latitude<input id="lat" type="number" step="any" placeholder="-6.3"></label><label>Longitude<input id="lng" type="number" step="any" placeholder="107.1"></label></div><button class="primary" type="submit">Cari Mitra</button></form><div id="orderResult"></div></section>
+<section><div class="info-grid"><article><b>1. Pesan</b><span>Pilih layanan dan kirim lokasi.</span></article><article><b>2. Mitra datang</b><span>Status dan lokasi mitra dapat dipantau.</span></article><article><b>3. Harga</b><span>Mitra mengirim penawaran sebelum bekerja.</span></article><article><b>4. Bayar</b><span>Pembayaran hanya QRIS atau Cash.</span></article></div></section>
+</main><footer>© 2026 JASA AJA · QRIS & Cash</footer></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js"></script>
+</body></html>

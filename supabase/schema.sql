@@ -1,0 +1,13 @@
+-- JASA AJA MVP schema. Run in Supabase SQL editor.
+create extension if not exists pgcrypto;
+create table public.profiles(id uuid primary key references auth.users(id) on delete cascade,full_name text not null default '',phone text,role text not null default 'customer' check(role in('customer','mitra','admin')),created_at timestamptz default now());
+create table public.services(id uuid primary key default gen_random_uuid(),name text unique not null,description text,icon text,active boolean default true,created_at timestamptz default now());
+create table public.orders(id uuid primary key default gen_random_uuid(),customer_id uuid not null references public.profiles(id),partner_id uuid references public.profiles(id),service_id uuid not null references public.services(id),status text not null default 'searching',address text not null,latitude double precision,longitude double precision,problem_description text,offered_price numeric,final_price numeric,created_at timestamptz default now(),updated_at timestamptz default now());
+create table public.payments(id uuid primary key default gen_random_uuid(),order_id uuid unique not null references public.orders(id) on delete cascade,method text not null check(method in('qris','cash')),amount numeric not null check(amount>=0),status text not null default 'pending',reference text,paid_at timestamptz,created_at timestamptz default now());
+alter table public.profiles enable row level security;alter table public.services enable row level security;alter table public.orders enable row level security;alter table public.payments enable row level security;
+insert into public.services(name,description,icon) values('Service AC','Perawatan dan perbaikan AC','❄️'),('Service Elektronik','Perbaikan elektronik rumah','📺'),('Tukang Listrik','Instalasi dan perbaikan listrik','⚡'),('Tukang Bangunan','Pekerjaan bangunan dan renovasi','🧱'),('Jasa Antar (Motor)','Pengantaran dengan motor','🛵'),('Jasa Antar (Mobil)','Pengantaran dengan mobil','🚗') on conflict(name) do nothing;
+create policy profiles_own on public.profiles for select to authenticated using((select auth.uid())=id);
+create policy services_public on public.services for select to anon,authenticated using(active=true);
+create policy orders_customer on public.orders for select to authenticated using((select auth.uid())=customer_id or (select auth.uid())=partner_id);
+create policy orders_insert on public.orders for insert to authenticated with check((select auth.uid())=customer_id);
+create policy payments_read on public.payments for select to authenticated using(exists(select 1 from public.orders o where o.id=order_id and ((select auth.uid())=o.customer_id or (select auth.uid())=o.partner_id)));
