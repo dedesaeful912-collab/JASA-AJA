@@ -80,3 +80,51 @@ do $$ begin
  begin alter publication supabase_realtime add table public.partner_locations; exception when duplicate_object then null; end;
  begin alter publication supabase_realtime add table public.notifications; exception when duplicate_object then null; end;
 end $$;
+
+
+-- Wallet / payout / settings hardening
+alter table public.mitra_wallets enable row level security;
+alter table public.payouts enable row level security;
+alter table public.app_settings enable row level security;
+
+drop policy if exists wallets_own_select on public.mitra_wallets;
+create policy wallets_own_select on public.mitra_wallets for select to authenticated using((select auth.uid())=mitra_id);
+drop policy if exists wallets_admin_all on public.mitra_wallets;
+create policy wallets_admin_all on public.mitra_wallets for all to authenticated using(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin')) with check(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin'));
+
+drop policy if exists payouts_own_select on public.payouts;
+create policy payouts_own_select on public.payouts for select to authenticated using((select auth.uid())=mitra_id);
+drop policy if exists payouts_own_insert on public.payouts;
+create policy payouts_own_insert on public.payouts for insert to authenticated with check((select auth.uid())=mitra_id and exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='mitra'));
+drop policy if exists payouts_admin_all on public.payouts;
+create policy payouts_admin_all on public.payouts for all to authenticated using(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin')) with check(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin'));
+
+drop policy if exists settings_admin_all on public.app_settings;
+create policy settings_admin_all on public.app_settings for all to authenticated using(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin')) with check(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin'));
+
+drop policy if exists payments_participant_insert on public.payments;
+create policy payments_customer_insert on public.payments for insert to authenticated with check(exists(select 1 from public.orders o where o.id=payments.order_id and o.customer_id=(select auth.uid()) and o.status='completed' and payments.amount=o.final_price));
+drop policy if exists payments_participant_update on public.payments;
+create policy payments_admin_update on public.payments for update to authenticated using(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin')) with check(exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin'));
+
+create or replace function private.enforce_payment_update() returns trigger language plpgsql security definer set search_path=pg_catalog,public as $$
+declare r text;
+begin
+ select role into r from public.profiles where id=auth.uid();
+ if r='admin' then return new; end if;
+ if auth.uid() is null or auth.uid()<>(select customer_id from public.orders where id=new.order_id) then raise exception 'Payment modification denied'; end if;
+ if new.order_id<>old.order_id or new.amount<>old.amount or new.method<>old.method or new.status<>old.status then raise exception 'Payment fields are immutable'; end if;
+ return new;
+end $$;
+revoke all on function private.enforce_payment_update() from public,anon,authenticated;
+drop trigger if exists enforce_payment_update on public.payments;
+create trigger enforce_payment_update before update on public.payments for each row execute function private.enforce_payment_update();
+
+create or replace function private.ensure_wallet_for_mitra() returns trigger language plpgsql security definer set search_path=pg_catalog,public as $$
+begin
+ if new.role='mitra' then insert into public.mitra_wallets(mitra_id) values(new.id) on conflict do nothing; end if;
+ return new;
+end $$;
+revoke all on function private.ensure_wallet_for_mitra() from public,anon,authenticated;
+drop trigger if exists ensure_wallet_for_mitra on public.profiles;
+create trigger ensure_wallet_for_mitra after insert on public.profiles for each row execute function private.ensure_wallet_for_mitra();
