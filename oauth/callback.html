@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Menghubungkan Tokopedia…</title>
+<link rel="stylesheet" href="../style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="app"><main>
+<section class="card auth">
+<h1>🔗 Menghubungkan Tokopedia</h1>
+<p id="status">Memproses otorisasi resmi…</p>
+</section>
+</main></div>
+<script>
+const SUPABASE_URL="https://mhesgrwdyzqnnlkuigdk.supabase.co";
+const SUPABASE_KEY="sb_publishable_ZXkkWGIDOe_AIRu-kzI-9g_7R1E-VGM";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const status=document.getElementById("status");
+(async()=>{
+  try{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session) throw new Error("Sesi aplikasi tidak ditemukan. Silakan login ulang.");
+    const p=new URLSearchParams(location.search);
+    const error=p.get("error");
+    const code=p.get("code")||p.get("auth_code");
+    const state=p.get("state");
+    if(error) throw new Error(p.get("error_description")||error);
+    if(!code||!state) throw new Error("Callback Tokopedia tidak lengkap.");
+    const {data,error:fnError}=await db.functions.invoke("tokopedia-oauth",{body:{action:"callback",code,state}});
+    if(fnError) throw fnError;
+    if(!data?.ok) throw new Error(data?.error||"Koneksi gagal.");
+    status.textContent="Toko berhasil terhubung. Mengembalikan ke dashboard…";
+    setTimeout(()=>location.href="../index.html",800);
+  }catch(e){
+    status.textContent=e.message||"Gagal menghubungkan toko.";
+  }
+})();
+</script>
+</body>
+</html>
