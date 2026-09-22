@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JASA AJA</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><div class="brand"><span>JA</span><div><b>JASA AJA</b><small id="roleLabel">Memuat...</small></div></div><button id="logout" class="ghost">Keluar</button></header>
+<main class="dashboard">
+<section class="hero"><p class="eyebrow">JASA AJA</p><h1 id="greeting">Halo 👋</h1><p>Temukan dan gunakan jasa lokal dengan alur yang jelas dan aman.</p></section>
+<section id="customerView" class="panel hidden"><h2>Layanan</h2><p class="muted">Belum ada layanan yang diaktifkan. Admin akan menambahkan layanan dari panel admin.</p></section>
+<section id="mitraView" class="panel hidden"><h2>Dashboard Mitra</h2><p class="muted">Profil mitra berhasil dibuat. Tahap berikutnya akan menambahkan layanan, status online, order masuk, dan dompet.</p></section>
+<section id="adminView" class="panel hidden"><h2>Super Admin</h2><p class="muted">Panel administrasi akan dibangun pada tahap berikutnya.</p></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script>
+<script>
+const roleLabel=document.getElementById('roleLabel'), greeting=document.getElementById('greeting');
+async function boot(){
+ const {data,error}=await jasaSupabase.auth.getSession();
+ if(error||!data.session){location.href='login.html';return;}
+ const user=data.session.user;
+ const p=await jasaSupabase.from('profiles').select('full_name,role').eq('id',user.id).single();
+ if(p.error){document.body.innerHTML='<main class="auth-card"><h1>Profil belum siap</h1><p>'+p.error.message+'</p></main>';return;}
+ const role=p.data.role, name=p.data.full_name||user.email.split('@')[0];
+ greeting.textContent='Halo, '+name+' 👋'; roleLabel.textContent=role==='mitra'?'Mitra Jasa':role==='admin'?'Super Admin':'Pelanggan';
+ document.getElementById(role+'View').classList.remove('hidden');
+}
+document.getElementById('logout').onclick=async()=>{await jasaSupabase.auth.signOut();location.href='login.html';};
+boot();
+</script>
+</body></html>
