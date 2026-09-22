@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JASA AJA — Daftar</title><link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+<main class="auth-card">
+  <div class="brand"><span>JA</span><div><b>JASA AJA</b><small>Jasa lokal, jadi lebih mudah.</small></div></div>
+  <h1>Buat akun</h1><p class="muted">Pilih jenis akun untuk memulai.</p>
+  <form id="registerForm">
+    <label>Nama lengkap<input id="fullName" type="text" autocomplete="name" required></label>
+    <label>No. HP<input id="phone" type="tel" autocomplete="tel" required></label>
+    <label>Email<input id="email" type="email" autocomplete="email" required></label>
+    <label>Password<input id="password" type="password" minlength="6" autocomplete="new-password" required></label>
+    <fieldset><legend>Saya ingin menjadi</legend>
+      <label class="choice"><input type="radio" name="role" value="customer" checked> Pelanggan</label>
+      <label class="choice"><input type="radio" name="role" value="mitra"> Mitra Jasa</label>
+    </fieldset>
+    <button class="primary" type="submit">Daftar</button>
+    <p id="message" class="message"></p>
+  </form>
+  <p class="switch">Sudah punya akun? <a href="login.html">Masuk</a></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+const form=document.getElementById('registerForm'), msg=document.getElementById('message');
+form.addEventListener('submit',async e=>{
+ e.preventDefault(); msg.textContent='Membuat akun...';
+ const role=document.querySelector('input[name="role"]:checked').value;
+ const {data,error}=await jasaSupabase.auth.signUp({
+   email:email.value.trim(),password:password.value,
+   options:{data:{full_name:fullName.value.trim(),phone:phone.value.trim(),role}}
+ });
+ if(error){msg.textContent=error.message;return;}
+ if(data.session){location.href='index.html';}
+ else {msg.textContent='Pendaftaran berhasil. Jika konfirmasi email aktif, silakan verifikasi email lalu masuk.';}
+});
+</script>
+</body></html>
